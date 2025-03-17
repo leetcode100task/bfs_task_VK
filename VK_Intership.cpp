@@ -5,23 +5,24 @@
 #include <string>
 #include <queue>
 #include <climits>
+#include <algorithm>
 
 struct RoadMap {
-    int vertex; // количество вершин
-    int edge;   // количество рёбер
-    std::vector<std::vector<int>> edges; // список рёбер
-    int road;   // стартовая вершина
-
+    int vertex; // number of vertices
+    int edge;   // number of edges
+    std::vector<std::vector<int>> edges; // list of edges
+    int road;   // starting vertex
 
     friend std::istream& operator>>(std::istream& in, RoadMap& data) {
         std::string line;
-        // Чтение количества вершин
+
+        // Read number of vertices
         if (std::getline(in, line)) {
             std::stringstream ss(line);
             if (!(ss >> data.vertex) || data.vertex <= 0) {
-                std::cerr << "Ошибка: неверное число вершин."
-                          << data.vertex 
-                          << std::endl;
+
+                std::cerr << "Error: invalid number of vertices: "
+                     << data.vertex << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
@@ -31,13 +32,12 @@ struct RoadMap {
             return in;
         }
 
-        // Чтение количества рёбер
+        // Read number of edges
         if (std::getline(in, line)) {
             std::stringstream ss(line);
             if (!(ss >> data.edge) || data.edge < 0) {
-                std::cerr << "Ошибка: неверное число рёбер."
-                          << data.edge 
-                          << std::endl;
+                std::cerr << "Error: invalid number of edges: "
+                    << data.edge << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
@@ -47,67 +47,65 @@ struct RoadMap {
             return in;
         }
 
-        // Чтение списка рёбер
+        // Read edge list
         for (int i = 0; i < data.edge; ++i) {
             if (std::getline(in, line)) {
                 std::stringstream ss(line);
                 int a, b;
                 if (!(ss >> a >> b)) {
-                    std::cerr << "Ошибка: не удалось считать пару вершин "
-                              << a 
-                              << b 
-                              << " для ребра." 
-                              << std::endl;
+                    std::cerr << "Error: failed to read vertex pair "
+                        << a << " " << b << " for an edge."
+                        << std::endl;
                     in.setstate(std::ios::failbit);
                     return in;
                 }
-                if (a < 0 || a >= data.vertex ) {
-                    std::cerr << "Ошибка: номер вершины: " << a 
-                              << " вне допустимого диапазона." << std::endl;
+                if (a < 0 || a >= data.vertex) {
+                    std::cerr << "Error: vertex number " << a
+                        << " is out of valid range." << std::endl;
                     in.setstate(std::ios::failbit);
                     return in;
                 }
                 if (b < 0 || b >= data.vertex) {
-                    std::cerr << "Ошибка: номер вершины: "<< b 
-                              << " вне допустимого диапазона." << std::endl;
+                    std::cerr << "Error: vertex number " << b
+                        << " is out of valid range." << std::endl;
                     in.setstate(std::ios::failbit);
                     return in;
                 }
                 data.edges.push_back({ a, b });
             }
             else {
-                std::cerr << "Ошибка: недостаточно строк для чтения рёбер." << std::endl;
+                std::cerr << "Error: not enough lines to read edges." << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
         }
 
-        // Чтение стартовой вершины
+        // Read starting vertex
         if (std::getline(in, line)) {
             std::stringstream ss(line);
             if (!(ss >> data.road)) {
-                std::cerr << "Ошибка: не удалось считать номер стартовой вершины." << std::endl;
+                std::cerr << "Error: failed to read the starting vertex number." << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
             if (data.edge < data.road) {
-                std::cerr << "Ошибка: ошибка выхода за пределы диапазона: " 
-                          << data.road 
-                          << " вне допустимого диапазона." 
-                          << std::endl;
+                std::cerr << "Error: out-of-range error: "
+                    << data.road
+                    << " is out of valid range."
+                    << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
             if (data.road < 0 || data.road >= data.vertex) {
-                std::cerr << "Ошибка: стартовая вершина: " 
-                    << data.road 
-                    << " вне допустимого диапазона." << std::endl;
+                std::cerr << "Error: starting vertex "
+                    << data.road
+                    << " is out of valid range." << std::endl;
                 in.setstate(std::ios::failbit);
                 return in;
             }
         }
         else {
-            std::cerr << "Ошибка: отсутствует строка со стартовой вершиной." << std::endl;
+            std::cerr << "Error: missing line for the starting vertex." << std::endl;
             in.setstate(std::ios::failbit);
             return in;
         }
@@ -117,25 +115,25 @@ struct RoadMap {
 };
 
 void printRoadMap(const RoadMap& roadmap) {
-    std::cout << "Количество вершин: " << roadmap.vertex << "\n";
-    std::cout << "Количество рёбер: " << roadmap.edge << "\n";
-    std::cout << "Список рёбер:\n";
+    std::cout << "Number of vertices: " << roadmap.vertex << "\n";
+    std::cout << "Number of edges: " << roadmap.edge << "\n";
+    std::cout << "Edge list:\n";
     for (const auto& edge : roadmap.edges) {
         if (edge.size() == 2) {
             std::cout << edge[0] << " " << edge[1] << "\n";
         }
     }
-    std::cout << "Стартовая вершина: " << roadmap.road << "\n";
+    std::cout << "Starting vertex: " << roadmap.road << "\n";
 }
+
 struct BFSResult {
     std::vector<int> dist;
     std::vector<int> parent;
-    friend std::ostream& operator<<(std::ostream& out, 
-                                const BFSResult& data) {
+    friend std::ostream& operator<<(std::ostream& out, const BFSResult& data) {
         for (size_t i = 0; i < data.dist.size(); ++i) {
-            out << "Вершина " << i << ": ";
+            out << "Vertex " << i << ": ";
             if (data.dist[i] == INT_MAX) {
-                out << "недостижима\n";
+                out << "unreachable\n";
             }
             else {
                 out << data.dist[i] << "\n";
@@ -168,6 +166,7 @@ BFSResult bfs(const std::vector<std::vector<int>>& graph, int start) {
     }
     return result;
 }
+
 std::vector<int> getPath(const std::vector<int>& parent, int finish) {
     std::vector<int> path;
     for (int cur = finish; cur != -1; cur = parent[cur])
@@ -180,13 +179,13 @@ int main() {
     setlocale(LC_ALL, "rus");
     std::ifstream file("input.txt");
     if (!file) {
-        std::cerr << "Ошибка открытия файла!" << std::endl;
+        std::cerr << "Error opening file!" << std::endl;
         return 1;
     }
 
     RoadMap roadmap;
     if (!(file >> roadmap)) {
-        std::cerr << "Ошибка при чтении данных из файла." << std::endl;
+        std::cerr << "Error reading data from file." << std::endl;
         return 1;
     }
     file.close();
@@ -206,12 +205,12 @@ int main() {
 
     BFSResult bfsResult = bfs(graph, roadmap.road);
 
-    std::cout << "Кратчайшие расстояния от вершины " 
-              << roadmap.road << ":\n";
+    std::cout << "Shortest distances from vertex "
+        << roadmap.road << ":\n";
     for (int i = 0; i < bfsResult.dist.size(); i++) {
-        std::cout << "Вершина " << i << ": ";
+        std::cout << "Vertex " << i << ": ";
         if (bfsResult.dist[i] == INT_MAX) {
-            std::cout << "недостижима\n";
+            std::cout << "unreachable\n";
         }
         else {
             std::cout << bfsResult.dist[i] << "\n";
@@ -222,30 +221,25 @@ int main() {
         fout << bfsResult;
     }
 
-
-    //часть кода, была сделана просто так, 
-    // показывает кратчайшый маршрут, 
-    // от точки интереса до заданой вершины xd
+    // The following code shows the shortest path
+    // from the starting vertex to a given destination vertex.just for fun
     int destination = 2;
 
-    if (destination >= 0 && 
-        destination < roadmap.vertex && 
+    if (destination >= 0 &&
+        destination < roadmap.vertex &&
         bfsResult.dist[destination] != INT_MAX) {
 
         std::vector<int> path = getPath(bfsResult.parent, destination);
-        std::cout << "\nКратчайший путь от вершины " << 
-                                        roadmap.road << 
-                                      " до вершины " << 
-                                         destination << ":\n";
+        std::cout << "\nShortest path from vertex " << roadmap.road
+            << " to vertex " << destination << ":\n";
         for (int v : path) {
             std::cout << v << " ";
         }
         std::cout << "\n";
     }
     else {
-        std::cout << "\nВершина " << destination 
-                                  << " недостижима от вершины " 
-                                  << roadmap.road << ".\n";
+        std::cout << "\nVertex " << destination
+            << " is unreachable from vertex " << roadmap.road << ".\n";
     }
 
     return 0;
