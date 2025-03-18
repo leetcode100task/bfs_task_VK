@@ -1,5 +1,5 @@
-Vertex 0: 2
-Vertex 1: 1
-Vertex 2: 2
+Vertex 0: 1
+Vertex 1: 2
+Vertex 2: 3
 Vertex 3: 3
 Vertex 4: 0
